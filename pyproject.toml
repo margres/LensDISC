@@ -1,0 +1,23 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "lensdisc"
+version = "1.0.0"
+description = "LensDISC: Lensing diffraction integral solving code"
+authors = [{name = "Margherita Grespan", email = "Margherita.Grespan@ncbj.gov.pl"}]
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+keywords = ["lensing", "GW"]
+dependencies = [
+    "astropy",
+    "matplotlib",
+    "numpy",
+    "scipy",
+    "pandas",
+]
+requires-python = ">=3.1"
+
+[project.urls]
+Home = "https://github.com/margres/LensDISC"
