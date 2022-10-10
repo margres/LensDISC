@@ -14,7 +14,7 @@ os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=1
 import numpy as np
 import scipy.optimize as op
 import scipy.special as ss
-
+import warnings
 
 
 
@@ -51,10 +51,11 @@ def FindCrit(y,lens_model,fact):
             foo = tmp
             #print('x image' ,xt_res)
             break
-        except NameError:
+        except NameError or UnboundLocalError:
             xt_res.append(0)
             if rmax==rmaxlist[-1]:
-                raise Exception('Could not find the value of the first image')
+                warnings.warn('Could not find the value of the first image with y = '+str(y))
+                return 0 #no images
 
     return xt_res
 
@@ -227,7 +228,7 @@ def FirstImage(y,fact,lens_model):
         #print('tlist',tlist)
     except:
         #only one image
-        t=TimeDelay(x,y,fact,lens_model)
+        t=TimeDelay(xlist,y,fact,lens_model)
     #print('phi_m:',t)
     return t
 

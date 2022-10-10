@@ -14,10 +14,6 @@
 ############# images with theta ~ [0,0.5*np.pi,np.pi,1.5*np.pi,2.*np.pi] is ignored
 
 import os
-os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=1
-os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=1
-os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=1
-
 import numpy as np
 import scipy.optimize as op
 import matplotlib.pyplot as plt
@@ -207,7 +203,7 @@ def muFunc(x12, xL12, lens_model, kappa=0, gamma=0, fact=[1,0,1], FindCrit=False
 
     elif lens_model == 'SIScore':
 
-        a,b,c,p=fact[0], fact[1], fact[2],fact[3]
+        a,b,c = fact[0], fact[1], fact[2]
 
         dx12pdx22_32 = ((dx1**2.+ dx2**2.)/c**2+b**2)**(3/2)*1/a
         # d^2psi/dx1^2

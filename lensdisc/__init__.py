@@ -16,6 +16,7 @@ from .DiffInt import DInt2D,DInt1D
 from .Utils.Versatile import SmoothingFunc
 from .Utils.PN_wav import PN_waveFunc
 from .Utils.PlotModels import PutLayout
-from .Utils.ConfigUnits import PutUnits
+from .Utils.Pointmass import Pointmass
+from .Utils.ConfigUnits import PutUnits, RemoveUnits
 from .HistCounting.HistCounting_updated import HistMethod
 from .Levin.Levin import LevinMethod

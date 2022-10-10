@@ -12,10 +12,6 @@
 ############# the source is set in the origin (xs=0)
 
 import os
-os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=1
-os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=1
-os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=1
-
 import sys
 import numpy as np
 import pandas as pd
@@ -23,8 +19,7 @@ from scipy import signal
 from ..Utils.Versatile import SmoothingFunc
 from ..Images.Images import TFunc, dTFunc, Images
 import time
-
-
+from ..Utils.PlotModels import PlotHistCounting
 
 class TreeClass(object):
     """
@@ -167,7 +162,7 @@ def FtHistFunc(xL12, lens_model, kappa=0, gamma=0, tlim_list=[0.5, 10, 100], dt_
     xL12: a list of 1-d numpy arrays [xL1, xL2]
         lens center position, coordinates in the lens plane.
     lens_model: str
-        Lens model, supported model ('point').
+        Lens model, supported model ('point', 'SIS').
     kappa: float (optional, default=0)
         Convergence of external shear.
     gamma: float (optional, default=0)
@@ -335,13 +330,13 @@ def FtHistFunc(xL12, lens_model, kappa=0, gamma=0, tlim_list=[0.5, 10, 100], dt_
 
     # calculate signular part
     Ftc = FtcFunc(images_info, t_list_final)
-
+    
     # remove signular part
     Ftd = Ft_list_final - Ftc
 
     return t_list_final, Ftd, Ft_list_final, images_info
 
-def HistMethod(xL12, lens_model, kappa=0, gamma=0, verbose = True, wlim=30., tlim_list=[0.5, 10, 100], dt_list=[1e-3, 1e-2, 1e-1]):
+def HistMethod(xL12, lens_model, kappa=0, gamma=0, verbose = True, wlim=30., tlim_list=[0.5, 10, 100], dt_list=[1e-3, 1e-2, 1e-1], plot_histcounting=False):
     """
     main function for histogram counting method.
 
@@ -365,8 +360,8 @@ def HistMethod(xL12, lens_model, kappa=0, gamma=0, verbose = True, wlim=30., tli
     """
     if verbose :
         print("Hist Method with: lens - {}; x - {}; kappa - {}; gamma -{}".format(lens_model,xL12, kappa, gamma ))
-
         print('start running...')
+        
     start = time.time()
 
     # final accuracy determined by the minimum one
@@ -375,6 +370,14 @@ def HistMethod(xL12, lens_model, kappa=0, gamma=0, verbose = True, wlim=30., tli
     # +++ 1. F(t) from histogram counting
     t_ori, Ftd_ori, Ft_ori, images_info = FtHistFunc(xL12, lens_model, kappa=kappa, gamma=gamma, tlim_list=tlim_list, dt_list=dt_list)
 
+    #if plot_histcounting==True:
+    #if True:
+    #    np.save('t_ori',t_ori)
+    #    np.save('Ftd_ori',Ftd_ori)
+    #    np.save('Ft_ori',Ft_ori)
+        #PlotHistCounting(t_ori,Ftd_ori,out='HistCount_smoothed' )
+        #PlotHistCounting(t_ori,Ft_ori,out='HistCount_tot' )
+        
     # +++ 2. smoothing the original results
     t, Ftd = SmoothingFunc(t_ori, Ftd_ori, dt, outlier_sigma=3, rolling_window=5)
 
@@ -428,4 +431,4 @@ def HistMethod(xL12, lens_model, kappa=0, gamma=0, verbose = True, wlim=30., tli
     if verbose:
         print('finished in', round(time.time()-start,2),'s' )
 
-    return w, Fw, Fw
+    return w, Fw, Fwc

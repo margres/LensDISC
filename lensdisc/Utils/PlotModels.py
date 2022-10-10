@@ -38,7 +38,7 @@ def PutLayout():
               'text.usetex': True,
               'savefig.dpi' : 100,
               'legend.fontsize':18,
-              'lines.markersize':10
+              'lines.markersize':5
               #'figure.figsize': fig_size
              }
     #plt.rcParams.update(params)
@@ -67,10 +67,10 @@ def PutLabels (x_label, y_label, title=None):
 def AddFigText(x,y,text):
     plt.figtext(x, y, text, fontsize=18)
 
-
-def PlotAmplitude(w,Fw,out):
-    plt.plot(w, np.abs(Fw), '.-', label='LensDISC')
-    plt.xscale('log')
+'''
+def PlotRes(w,Fw_,out):
+    ax1.plot(w, np.abs(Fw), '.-', label='LensDISC')
+    ax1.xscale('log')
     #plt.xlim([0.1, 100])
     plt.legend(loc='upper left')
     plt.savefig(out+'.png',dpi=300)
@@ -83,5 +83,16 @@ def PlotPhase(w,Fw,out):
     #plt.xlim([0.1, 100])
     plt.legend(loc='upper left')
     plt.savefig(out+'.png',dpi=300)
+    #plt.show(block=False)
+    plt.close()
+'''
+
+
+def PlotHistCounting(t,Ft, out):
+    PutLayout()
+    plt.plot(t,Ft, '.-')
+    #plt.legend(loc='upper left')
+    plt.savefig(out+'.png',dpi=300)
+    print('saved in out')
     #plt.show(block=False)
     plt.close()

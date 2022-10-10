@@ -395,30 +395,35 @@ def LevinFunc(xmin, xmax, size, w, y, phim, lens_model, cosORsin,fact):
     return I
 
 
-def InteFunc(w, y, lens_model='SIScore',fact=[1,0,1], size=19, accuracy=1e-6, N_step=50, Niter=int(1e5)):
+
+def InteFunc(w, y, lens_model='SIScore', fact=[1,0,1], size=19, accuracy=1e-2, N_step=50, Niter=int(1e5)):
     """
-
-    accuracy= 1e-6
-
     Solve the integral
         int_0^1 dx (x/(1-x)**3) J0(r*(x/(1-x))) exp(i G(x/(1-x)))
         Using
             Levin method + adaptive subdivision
+
     Parameters
     ----------
+
     w: float
         dimensionless frequency from lens problem
+
     y: float
         impact parameter from lens problem
+
     lens_model: string ('SIS'(default), ...)
-        lens model
+        lens model 
+
     size: positive int (default=19)
         length of requested series.
+    
+    accuracy: float (default=1e-2)
+        tolerable accuracy in smoothness
 
-    accuracy: float (default=1e-5)
-        tolerable accuracy
     N_step: int (default=50)
         first guess of steps for subdivision
+
     Niter: int (default=int(1e5))
         the maximum iterating running
     """
@@ -427,111 +432,69 @@ def InteFunc(w, y, lens_model='SIScore',fact=[1,0,1], size=19, accuracy=1e-6, N_
     # hard-coded integral range
     #   by variable change, the whole range is always (0,1)
     xmin = 0.
-    xmax = 1.
+    xmax = 1.-1e-9
 
     I_cos_sin = np.zeros(2, dtype=float)
     part_names = ['cos', 'sin']
-
+    
     phim= FirstImage(y,fact,lens_model)
-    #print('first image at time ',phim )
-
-
-
-
-    # cos and sin parts should be divided separately
+    
+    # cos and sin parts should be divided separately 
     for i_name in range(len(part_names)):
         part_name = part_names[i_name]
         I_final = 0.
-        # xbounds_list = []
-        flag_succeed = False
 
-        # fix dx for each step
+        # first guess of the step
         dx = (xmax-xmin)/N_step
         a = xmin
-        b = a + dx
+        xmid = a + dx
+        b = xmid + dx
+        I_test1 = LevinFunc(a, xmid, size, w, y, phim, lens_model, part_name, fact)
+        I_test2 = LevinFunc(xmid, b, size, w, y, phim, lens_model, part_name, fact)
+        # get accuracy by comparing between neighbours
+        diff_test = np.absolute(I_test1 - I_test2)
 
-
-        for Nrun in range(Niter):
-
-            # avoid surpassing the upper bound
-            if b >= xmax:
-                # if this is the case, refine the binning
-                dx = (xmax-a)/2.
-                # check if dx meets the accuracy
-                if dx < accuracy:
-                    flag_succeed = True
-                    break
-                b = a + dx
-
-            I_test0 = LevinFunc(a, b, size, w, y,phim, lens_model, part_name,fact)
-            # # break with LinAlgError
-            # if I_test0==0:
-            #     flag_succeed = (b-a)
-            #     print("Here 0")
-            #     break
-            # print("new sub-result", I_test0)
-
-            # avoid accuracy check for the first run
-            if I_final != 0.:
-                # define the whole accuracy by comparing the new sub-result with the whole result
-                diff = np.absolute(I_test0/I_final)
-
-
-                # print("I_final", I_final)
-                # print("diff", diff)
-                if diff < accuracy:
-                    flag_succeed = True
-                    break
-
-            # keep cutting toward left until it meets the accuracy
-            diff_left = 1.
-            flag_left_succeed = False
+        # loop until the end (xmax)
+        while True:
+        
+            # refine the binning
             for Nrun_left in range(Niter):
-
-                # split to half
-                xmid = (b+a)/2.
-                # check if dx meets the accuracy
-                if (b-xmid) < accuracy:
-                    flag_succeed = True
+                if diff_test < accuracy:
                     break
 
-                I_test11 = LevinFunc(a, xmid, size, w, y,phim, lens_model, part_name,fact)
-                I_test12 = LevinFunc(xmid, b, size, w, y,phim, lens_model, part_name,fact)
-                # # break with LinAlgError
-                # if (I_test11==0) or (I_test12==0):
-                #     flag_succeed = (b-a)
-                #     print("here 11")
-                #     break
-
-                I_test1 = I_test11 + I_test12
-                # define the middle-way accuracy by looking at the difference between half-split result and original result
-                diff_left = np.absolute(I_test1-I_test0)
-                if diff_left < accuracy:
-                    flag_left_succeed = True
-                    break
-
-                # iterating
+                # keep split
                 b = xmid
-                I_test0 = I_test11
+                xmid = (a+b)/2.
 
-            # accumulate results from the last run
-            I_final += I_test0
-            # save bound from the last run
-            # xbounds_list.append(b)
-            # print("left iterating finished with {:} runs".format(Nrun_left))
-            # print("resulted upper bound", b)
+                I_test1 = LevinFunc(a, xmid, size, w, y, phim, lens_model, part_name, fact)
+                I_test2 = LevinFunc(xmid, b, size, w, y, phim, lens_model, part_name, fact)
+                # get accuracy by comparing between neighbours
+                diff_test = np.absolute(I_test1 - I_test2)
+
+            # accumulate results
+            I_final += I_test1
+            I_final += I_test2
 
             ### move forward to right side
             a = b
             b = a + dx
+            b = min(b, xmax)
+            xmid = (a+b)/2.
+            # print('>>>>>>>>> a', a)
+            # print('>>>>>>>>> dx', dx)
+            # print('>>>>>>>>> b', b)
+            I_test1 = LevinFunc(a, b, size, w, y, phim, lens_model, part_name, fact)
+            # get accuracy by comparing between neighbours
+            diff_test = np.absolute(I_test1 - I_test2)
+            I_test2 = 0
+
+            if (b >= xmax):
+                I_final += I_test1
+                break
 
         I_cos_sin[i_name] = I_final
-
-        #print("Running part", part_name)
-        #print("adaptive subdivision finished with {:} runs".format(Nrun))
-        # print("resulted total bounds", len(xbounds_list))
-        #print("resulted upper bound", b)
-        #print("flag_succeed", flag_succeed)
+        # print("Running part", part_name)
+        # print("resulted upper bound", b)
 
     return I_cos_sin
 
@@ -571,7 +534,7 @@ def InteFunc_simple(w, y, lens_model='SIScore', fact=[1,0,1],size=19):
     return I_cos_sin
 
 
-def InteFunc_fix_step(w, y, lens_model='SIScore',fact=[1,0,1], size=19, N_step=50):
+def InteFunc_fix_step(w, y, lens_model='SIScore',fact=[1,0,1,1], size=19, N_step=50):
     """
     Solve the integral
         int_0^1 dx (x/(1-x)**3) J0(r*(x/(1-x))) exp(i G(x/(1-x)))
@@ -616,12 +579,29 @@ def InteFunc_fix_step(w, y, lens_model='SIScore',fact=[1,0,1], size=19, N_step=5
 
     return I_cos_sin
 
-def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Adaptive', verbose = True):
-
+def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True, N_step=50):
+    
+    '''
+    Solve the diffraction integral
+    
+    Parameters
+    ----------
+    w: float
+        dimensionless frequency from lens problem
+    y: float
+        impact parameter from lens problem
+    lens_model: string ('SIS'(default), ...)
+        lens model
+    fact: parameters used for some lenses.
+    verbose: print info about what integral is calculating
+    N_step: int (default=50)
+        fixed number of steps for subdivision
+    '''
+    
     a,b,c,p =fact[0],fact[1],fact[2],fact[3]
 
     if verbose:
-        print("Levin Method with: lens - {}; x - {} ".format(lens_model, y ))
+        print("Levin Method with: lens - {}; x - {}  and subdivision {}".format(lens_model, y, typesub ))
         if lens_model=='softenedpowerlawkappa' or lens_model=='softenedpowerlaw':
             print(f'additional parameters a - {a}; b - {b}; p-{p}')
         elif lens_model=='SIScore':
@@ -630,9 +610,12 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Adaptive', verbose = T
         print('start running...')
 
     start = time.time()
-
-    w_range=np.round(np.linspace(w[0],w[1],int(w[2])),5)
-
+    if type(w).__name__ =='list':
+        w_range=np.round(np.linspace(w[0],w[1],int(w[2])),5)
+    elif type(w).__name__ =='ndarray':
+        w_range=np.round(w,5)
+    else:
+        raise Exception('Only array containing frequencies or list with boundaries is accepted')
 
     Fw=[]
     #time_l=[]
@@ -644,9 +627,9 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Adaptive', verbose = T
 
         # ++++++++++++++++++++++++++ optimal with adaptive subdivision
         if typesub=='Fixed':
-            I_cos_sin = InteFunc_fix_step(w, y,lens_model, [a,b,c,p])
+            I_cos_sin = InteFunc_fix_step(w, y,lens_model, [a,b,c,p], N_step)
         elif typesub=='Adaptive':
-            I_cos_sin = InteFunc(w, y,lens_model, [a,b,c,p])
+            I_cos_sin = InteFunc(w, y,lens_model, [a,b,c,p], N_step)
         elif typesub=='Simple':
             I_cos_sin = InteFunc_simple(w, y,lens_model, [a,b,c,p])
         else:

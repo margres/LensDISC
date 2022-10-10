@@ -76,7 +76,7 @@ def ParseConfig():
         raise ValueError('Kappa and/or gamma have to be positive.')
 
     if config_hist.get('lens_model') not in ['point', 'SIS']:
-        raise ValueError('Lens model {} not available! Pick one in between: \n  point or SIS .'.format(config_hist.get('lens_model')))
+        raise ValueError('Lens model {} not available! Pick one between: \n  point or SIS .'.format(config_hist.get('lens_model')))
 
 
     hist_configs = {'model': config_hist.get('lens_model'),
@@ -101,6 +101,13 @@ def ParseConfig():
 
     if config_levin.get('lens_model') not in [ 'point', 'SIScore' , 'softenedpowerlaw', 'softenedpowerlawkappa']:
         raise ValueError('Lens model {} not available! Pick one in between: \n  point, SIScore , softenedpowerlaw, softenedpowerlawkappa .'.format(config_levin.get('lens_model')))
+        
+    if config_levin.getfloat('xL') <0:
+        raise ValueError('The readial distance must to be positive.')
+    if config_levin.getint('N_step') <0:
+        raise ValueError('The amount of steps must be positive.')
+    if config_levin.get('typesub') not in ['Fixed', 'Adaptive'] :
+        raise ValueError('Wrong type of subdivision.s')
 
     levin_configs = {'model': config_levin.get('lens_model'),
                         'xL': config_levin.getfloat('xL'),
@@ -108,7 +115,8 @@ def ParseConfig():
                         'a': config_levin.getfloat('a'),
                         'b': config_levin.getfloat('b'),
                         'p': config_levin.getfloat('p'),
-                        'typesub': config_levin.get('typesub')}
+                        'typesub': config_levin.get('typesub'),
+                        'N_step': config_levin.getint('N_step') }
 
     ## Plot info
     config_plot = config['PlotInfo']
@@ -139,14 +147,35 @@ out_hist = 2D/                                 # path results Histogram method \
 [LensInfo]\n\n\
 add_units=False                                # Boolean, if False the results will have unitless frequencies.\n\
                                                # If False the results will be dimensionless \n\
-M = 1.0                                        # mass of the lens in solar masses \n\
-D_l = 1.0                                      # distance of the lens in kpc \n\
-D_s = 1.0                                      # distance of the source in kpc \n\
+M = 50.0                                        # mass of the lens in solar masses \n\
+D_l = 10.0                                      # distance of the lens in kpc \n\
+D_s = 100.0                                      # distance of the source in kpc \n\
+\n\n\
+################################## LevinInfo ##############################################\n\
+[LevinInfo]\n\n\
+lens_model= SIScore                            # String. Lens model, supported models: \n\
+						                       # point, SIScore , softenedpowerlaw, softenedpowerlawkappa. \n\
+                                               # str \n\
+xL =       0.1                                 # radial distance lens-source.  \n\
+                                               # positive float \n\
+w = 0.001,100,1000		               		   # frequency range and amount of points \n\
+#lens parameters \n\
+a =         1.0                                # Amplitude parameter. \n\
+                                               # float (default=1)\n\
+b =         0                                  # Core value\n\
+                                               # float (default=0, range=[0,1])\n\
+p =         1.0                                # power law value \n\
+                                               # float (default=1) \n\
+                                               # softenedpowerlawkappa p<1. softenedpowerlaw range (0,2) \n\
+typesub = Fixed                                # type of subdivision (Adaptive or Fixed), default Fixed. \n\
+                                               # Fixed divides integral in fixed steps, can be less accurate for certain models but faster. \n\
+N_step = 50                                    # For fixed subdivision, amount of steps in the range. For Adaptive first guess of steps. \n\
+                                               # integer (default=50) \n\
 \n\n\
 ################################## HistInfo ##############################################\n\
 [HistInfo]\n\n\
 lens_model= point                              # String. Lens model, supported models: point, SIS. \n\
-xL =       0.1,0.1                             # lens position, source is in the center. distance lens-source.\n\
+xL =       0.1,0.1                             # lens position, source is in the center - coordinates in the source plane \n\
 #external shear \n\
 #N.B. the value of kappa + gamma has to be smaller than 1, i.e. in the range [0,1) \n\
 \n\
@@ -154,24 +183,6 @@ kappa =         0.0                            # Convergence of external shear\n
                                                # float (positive number, default=0)\n\
 gamma =         0.0                            # Shear of external shear.\n\
                                                # float (positive number, default=0)\n\
-\n\n\
-################################## LevinInfo ##############################################\n\
-[LevinInfo]\n\n\
-lens_model= SIScore                            # String. Lens model, supported models: \n\
-						                       # point, SIScore , softenedpowerlaw, softenedpowerlawkappa. \n\
-                                               # str \n\
-xL =       0.1                                 # distance lens-source.  \n\
-w = 0.001,100,1000		               		   # frequency range and amount of points \n\
-#lens parameters \n\
-a =         1.0                                # Amplitude parameter. \n\
-                                               # float ( default=1)\n\
-b =         0.5                                # Core value\n\
-                                               # float ( default=0, range=[0,1])\n\
-p =         1.0                                # power law value \n\
-                                               # float ( default=1) \n\
-                                               # softenedpowerlawkappa p<1. softenedpowerlaw range (0,2) \n\
-typesub = Adaptive                             # type of subdivision (Adaptive or Fixed), default Adaptive. \n\
-                                               # Fixed to divide integral in fixed steps, less accurate for certain models. \n\
 \n\n\
 ################################## Plots ##############################################\n\
 [PlotInfo]\n\n\
