@@ -3,10 +3,9 @@ import os
 os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=1
 os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=1
 os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=1
-
 import numpy as np
 from .Utils.RunConfigFile import ParseConfig
-from .HistCounting.HistCounting_updated import HistMethod
+from .HistCounting.HistCounting import HistMethod
 from .Levin.Levin import LevinMethod
 from .Utils.PostProcess import LevinPostprocess,Histpostprocess
 from .Images.Images import TContourplot
@@ -53,7 +52,7 @@ def DInt1D(verbose=True):
     xL=model_info1D['xL']
     lens_model=model_info1D['model']
     typesub=model_info1D['typesub']
-    out_1D=work_path['levin']+lens_model+'/'+typesub+'_'
+    out_1D=work_path['levin']+lens_model+'/'
     fact=[model_info1D['a'],model_info1D['b'],1,model_info1D['p']]
     w = model_info1D['w']
     N_step = model_info1D['N_step']
@@ -66,6 +65,7 @@ def DInt1D(verbose=True):
         print(f'Saving Critical Curves-Caustics plot in {out_1D}.')
         PlotCurves([xL,0], [0,0], 0, 0, lens_model,fact,out_1D)
 
+    out_1D = out_1D+'Fixed_'
     w, Fw = LevinMethod(w, xL, lens_model, fact,typesub=typesub, verbose=verbose)
     LevinPostprocess(w, Fw,xL, lens_model, fact, out_1D,showPlotFinal)
 

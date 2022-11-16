@@ -16,6 +16,7 @@ dependencies = [
     "numpy",
     "scipy",
     "pandas",
+    'mpmath'
 ]
 requires-python = ">=3.1"
 

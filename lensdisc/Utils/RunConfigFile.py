@@ -101,7 +101,7 @@ def ParseConfig():
 
     if config_levin.get('lens_model') not in [ 'point', 'SIScore' , 'softenedpowerlaw', 'softenedpowerlawkappa']:
         raise ValueError('Lens model {} not available! Pick one in between: \n  point, SIScore , softenedpowerlaw, softenedpowerlawkappa .'.format(config_levin.get('lens_model')))
-        
+
     if config_levin.getfloat('xL') <0:
         raise ValueError('The readial distance must to be positive.')
     if config_levin.getint('N_step') <0:
@@ -139,7 +139,7 @@ def GenerateExampleConfig (file_name):
 \n\n\
 ################################## Paths ################################################\n\
 [Paths]\n\n\
-out_dir =  ./Results/                           # main directory for all the outputs \n\
+out_dir =  ./Results/                          # main directory for all the outputs \n\
 out_levin = 1D/                                # path results Levin method \n\
 out_hist = 2D/                                 # path results Histogram method \n\
 \n\n\
@@ -147,16 +147,16 @@ out_hist = 2D/                                 # path results Histogram method \
 [LensInfo]\n\n\
 add_units=False                                # Boolean, if False the results will have unitless frequencies.\n\
                                                # If False the results will be dimensionless \n\
-M = 50.0                                        # mass of the lens in solar masses \n\
-D_l = 10.0                                      # distance of the lens in kpc \n\
-D_s = 100.0                                      # distance of the source in kpc \n\
+M = 50.0                                       # mass of the lens in solar masses \n\
+D_l = 10.0                                     # distance of the lens in Mpc \n\
+D_s = 100.0                                    # distance of the source in Mpc \n\
 \n\n\
 ################################## LevinInfo ##############################################\n\
 [LevinInfo]\n\n\
 lens_model= SIScore                            # String. Lens model, supported models: \n\
 						                       # point, SIScore , softenedpowerlaw, softenedpowerlawkappa. \n\
                                                # str \n\
-xL =       0.1                                 # radial distance lens-source.  \n\
+xL =       0.1                                 # radial distance lens-source - in units of Einstein radius  \n\
                                                # positive float \n\
 w = 0.001,100,1000		               		   # frequency range and amount of points \n\
 #lens parameters \n\
@@ -176,6 +176,7 @@ N_step = 50                                    # For fixed subdivision, amount o
 [HistInfo]\n\n\
 lens_model= point                              # String. Lens model, supported models: point, SIS. \n\
 xL =       0.1,0.1                             # lens position, source is in the center - coordinates in the source plane \n\
+                                               # in units of Einstein radius \n\
 #external shear \n\
 #N.B. the value of kappa + gamma has to be smaller than 1, i.e. in the range [0,1) \n\
 \n\

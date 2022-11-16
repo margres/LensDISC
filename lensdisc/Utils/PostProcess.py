@@ -53,7 +53,7 @@ def Savetocsv(w,Fw,savetopath, w_units, Fwc=None):
         df['real F(w)_semicl'] = np.real(Fwc)
         df['imag F(w)_semicl'] = np.imag(Fwc)
         df['abs F(w)_semicl'] = np.abs(Fwc)
-        
+
     df.to_csv(savetopath+'.csv', sep='\t', index= False)
 
 
@@ -91,7 +91,7 @@ def Histpostprocess(w, Fw,Fwc, xL12,lens_model,kappa,gamma, out_2D, plot=True):
 
 
     if plot:
-        PutLayout() 
+        PutLayout()
         ### TO DO: add title and kappa gamma info
         fig, (ax1,ax2) = plt.subplots(nrows=2, sharex=True,  figsize=(10, 10)) # frameon=False removes frames
         ax1.plot( w, np.abs(Fwc), c='silver',ls='-', label= 'Semi-classical')
@@ -101,7 +101,7 @@ def Histpostprocess(w, Fw,Fwc, xL12,lens_model,kappa,gamma, out_2D, plot=True):
         #ax1.set_title('SIScore x$_L$=0.4 a=1.0 b=0.5')
         #ax1.legend( fontsize=15)
 
-       
+
         ax2.plot(w, np.angle(Fwc),c='silver',ls='-', label= 'Semi-classical',alpha=1)
         ax2.plot(w , np.angle(Fw),c='lightcoral',ls='-',alpha=1, label= 'Hist-counting')
         ax2.set_xscale('log')
@@ -112,10 +112,12 @@ def Histpostprocess(w, Fw,Fwc, xL12,lens_model,kappa,gamma, out_2D, plot=True):
         plt.close()
         plt.legend(loc = 'lower center', bbox_to_anchor = (0, -0.01, 1, 1),
            bbox_transform = plt.gcf().transFigure)
-        
+        plt.show(block=False)
+        plt.close()
+
     print('Done.')
 
-        
+
 def LevinPostprocess(w, Fw,xL, lens_model, fact,out_1D, plot):
 
     add_info = Filename(lens_model,xL, fact)
@@ -127,16 +129,16 @@ def LevinPostprocess(w, Fw,xL, lens_model, fact,out_1D, plot):
         Savetocsv(w_unitless,Fw, savetopath, w)
         xlabel='$\omega$ [Hz]'
         ylabel_amp='$|F(\omega)|$'
-        ylabel_ph = '$\Phi_F$(\omega)'
+        ylabel_ph = '$\Phi_F(\omega)$'
     else:
         xlabel='$w$'
         ylabel_amp='$|F(w)|$'
-        ylabel_ph = '$\Phi_F$(w)'
+        ylabel_ph = '$\Phi_F(w)$'
         Savetocsv(w,Fw, savetopath, np.zeros_like(w))
-    
+
 
     if plot:
-        PutLayout() 
+        PutLayout()
         fig, (ax1,ax2) = plt.subplots(nrows=2, sharex=True,  figsize=(10, 10)) # frameon=False removes frames
         ## TO DO:add title
         ax1.plot(w, np.abs(Fw), c='skyblue',ls='-',alpha=1)
@@ -151,6 +153,7 @@ def LevinPostprocess(w, Fw,xL, lens_model, fact,out_1D, plot):
         #ax2.legend( fontsize=15)
         ax2.set_xlabel(xlabel,fontsize=20 )
         plt.savefig(out_1D+'Fw_'+add_info+'.png',dpi=100)
+        plt.show(block=False)
         plt.close()
         '''
         ## plot Amplitude

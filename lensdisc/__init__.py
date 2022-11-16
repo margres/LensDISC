@@ -18,5 +18,5 @@ from .Utils.PN_wav import PN_waveFunc
 from .Utils.PlotModels import PutLayout
 from .Utils.Pointmass import Pointmass
 from .Utils.ConfigUnits import PutUnits, RemoveUnits
-from .HistCounting.HistCounting_updated import HistMethod
+from .HistCounting.HistCounting import HistMethod
 from .Levin.Levin import LevinMethod
