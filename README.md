@@ -1,4 +1,4 @@
-# LensDISC - Lensing DIffracatoin Solving
+# LensDISC - Lensing DIffracatoin Solving Code
 
 To start using this package download this folder and on the terminal run
 
