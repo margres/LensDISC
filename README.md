@@ -1,12 +1,13 @@
 # LensDISC - Lensing DIffracatoin Solving Code
 
 To start using this package download this folder and on the terminal run
-(if you download with ssh):
+
+- if you download with ssh:
 ```
 pip3 install yourpath/LensDISC/
 
 ```
-(if you download the folder):
+- if you download the zipped folder:
 ```
 pip3 install yourpath/LensDISC-main/
 
