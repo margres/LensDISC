@@ -360,7 +360,7 @@ def HistMethod(xL12, lens_model, kappa=0, gamma=0, verbose = True, wlim=30., tli
     """
     if verbose :
         print("Hist Method with: lens - {}; x - {}; kappa - {}; gamma -{}".format(lens_model,xL12, kappa, gamma ))
-        print('start running...')
+        print('Running...')
         
     start = time.time()
 

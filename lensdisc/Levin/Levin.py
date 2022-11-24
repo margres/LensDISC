@@ -607,7 +607,7 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
         elif lens_model=='SIScore':
             print(f"additional parameters a - {a}; b - {b}")
 
-        print('start running...')
+        print('Running...')
 
     start = time.time()
     if type(w).__name__ =='list':
