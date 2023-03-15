@@ -251,7 +251,7 @@ def Images(xL12, lens_model, kappa=0, gamma=0, fact=[1,0,1],return_mu=True, retu
     xL12: a list of 1-d numpy arrays [xL1, xL2]
         lens center position, coordinates in the lens plane.
     lens_model: str
-        Lens model, supported model ('point').
+        Lens model, supported model ('point', 'SIS').
     kappa: float (optional, default=0)
         convergence of external shear.
     gamma: float (optional, default=0)

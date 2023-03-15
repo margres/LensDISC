@@ -59,7 +59,25 @@ def FindCrit(y,lens_model,fact):
 
     return xt_res
 
+def SIS(x,y,fact):
+    '''
+    Singular isothermal Sphere potential derivative 1D (x is one dimensional vector).
 
+    Parameters
+    ----------
+    x: coordinate in the lens plane
+    y: float, impact parameter position
+
+
+    '''
+    a=fact[0]
+    #derivative of the 1D potential
+    phip= a
+    #derivative of the time delay
+    tp= (x - y) - phip
+
+    return tp
+    
 def SIScore (x,y,fact):
     '''
     Singular isothermal Sphere potential derivative 1D (x is one dimensional vector).

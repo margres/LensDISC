@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as npx
 from .RunConfigFile import ParseConfig
 import os
 from astropy import units as u
@@ -13,12 +13,12 @@ D_ls=ERadInfo['D_ls']*u.Mpc
 D_l=ERadInfo['D_l']*u.Mpc
 D_s=ERadInfo['D_s']*u.Mpc
 
-def Einstein_radius():
+def Einstein_angle():
 
     return (4*G*M*D_ls/(c**2*D_l*D_s))**(1/2)
 
 def ConvFactor():
-    return (Einstein_radius()**2/(D_ls))*(D_s*D_l)
+    return (Einstein_angle()**2/(D_ls))*(D_s*D_l)
 
 def PutUnits(w):
     w_units=w*c/ConvFactor()

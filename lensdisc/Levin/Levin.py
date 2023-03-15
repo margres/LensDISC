@@ -590,7 +590,7 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
         dimensionless frequency from lens problem
     y: float
         impact parameter from lens problem
-    lens_model: string ('SIS'(default), ...)
+    lens_model: string ('SIS', 'point', ..)
         lens model
     fact: parameters used for some lenses.
     verbose: print info about what integral is calculating
@@ -633,7 +633,7 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
         elif typesub=='Simple':
             I_cos_sin = InteFunc_simple(w, y,lens_model, [a,b,c,p])
         else:
-            raise Exception('Unsupported subdivision type')
+            raise Exception('Unsupported subdivision type. available: Fixed, Adaptive,Simple')
 
         #print('I_cos', I_cos_sin[0])
         #print('I_sin', I_cos_sin[1])
