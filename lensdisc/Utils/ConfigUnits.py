@@ -1,4 +1,4 @@
-import numpy as npx
+import numpy as np
 from .RunConfigFile import ParseConfig
 import os
 from astropy import units as u

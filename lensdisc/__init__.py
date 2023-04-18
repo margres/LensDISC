@@ -19,4 +19,4 @@ from .Utils.PlotModels import PutLayout
 from .Utils.Pointmass import Pointmass
 from .Utils.ConfigUnits import PutUnits, RemoveUnits
 from .HistCounting.HistCounting import HistMethod
-from .Levin.Levin import LevinMethod
+from .Levin.Levin import LevinMethod,LevinMethodparallel

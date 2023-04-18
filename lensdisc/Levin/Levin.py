@@ -593,6 +593,7 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
     lens_model: string ('SIS', 'point', ..)
         lens model
     fact: parameters used for some lenses.
+         fact = [a,b,c,p] 
     verbose: print info about what integral is calculating
     N_step: int (default=50)
         fixed number of steps for subdivision
@@ -642,6 +643,104 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
         #print(restemp)
         Fw.append(restemp)
         #time_l.append(time.time()-start)
+
+    Fw=np.asarray(Fw)
+    if verbose:
+        print('finished in', round(time.time()-start,2),'s' )
+
+    return w_range, Fw
+
+
+from multiprocessing import Pool
+from functools import partial
+
+def parallel_func(w, y, lens_model, fact, typesub, N_step):
+    const = -1j * w * np.exp(1j * w * y ** 2. / 2.)
+
+    if typesub == 'Fixed':
+        I_cos_sin = InteFunc_fix_step(w, y, lens_model, fact, N_step)
+    elif typesub == 'Adaptive':
+        I_cos_sin = InteFunc(w, y, lens_model, fact, N_step)
+    elif typesub == 'Simple':
+        I_cos_sin = InteFunc_simple(w, y, lens_model, fact)
+    else:
+        raise Exception('Unsupported subdivision type. available: Fixed, Adaptive,Simple')
+
+    restemp = const * (I_cos_sin[0] + 1j * I_cos_sin[1])
+    return restemp
+    
+def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True, N_step=50, n_processes=6):
+    
+    '''
+    Solve the diffraction integral
+    
+    Parameters
+    ----------
+    w: float
+        dimensionless frequency from lens problem
+    y: float
+        impact parameter from lens problem
+    lens_model: string ('SIS', 'point', ..)
+        lens model
+    fact: parameters used for some lenses.
+         fact = [a,b,c,p] 
+    verbose: print info about what integral is calculating
+    N_step: int (default=50)
+        fixed number of steps for subdivision
+    '''
+    
+    a,b,c,p =fact[0],fact[1],fact[2],fact[3]
+
+    if verbose:
+        print("Levin Method with: lens - {}; x - {}  and subdivision {}".format(lens_model, y, typesub ))
+        if lens_model=='softenedpowerlawkappa' or lens_model=='softenedpowerlaw':
+            print(f'additional parameters a - {a}; b - {b}; p-{p}')
+        elif lens_model=='SIScore':
+            print(f"additional parameters a - {a}; b - {b}")
+
+        print('Running...')
+
+    start = time.time()
+    if type(w).__name__ =='list':
+        w_range=np.round(np.linspace(w[0],w[1],int(w[2])),5)
+    elif type(w).__name__ =='ndarray':
+        w_range=np.round(w,5)
+    else:
+        raise Exception('Only array containing frequencies or list with boundaries is accepted')
+
+    Fw=[]
+    #time_l=[]
+    
+    '''
+    for w in w_range:
+
+        #print('W',w)
+        const = -1j*w*np.exp(1j*w*y**2./2.)
+
+        # ++++++++++++++++++++++++++ optimal with adaptive subdivision
+        if typesub=='Fixed':
+            I_cos_sin = InteFunc_fix_step(w, y,lens_model, [a,b,c,p], N_step)
+        elif typesub=='Adaptive':
+            I_cos_sin = InteFunc(w, y,lens_model, [a,b,c,p], N_step)
+        elif typesub=='Simple':
+            I_cos_sin = InteFunc_simple(w, y,lens_model, [a,b,c,p])
+        else:
+            raise Exception('Unsupported subdivision type. available: Fixed, Adaptive,Simple')
+
+        #print('I_cos', I_cos_sin[0])
+        #print('I_sin', I_cos_sin[1])
+    '''
+    
+    # create a Pool object with the desired number of processes
+    pool = Pool(processes=n_processes)
+    parallel_func_partial = partial(parallel_func, y=y, lens_model=lens_model, fact=fact, typesub=typesub, N_step=N_step)
+
+    # run the for loop in parallel using the map() method
+    Fw = pool.map(parallel_func_partial, w_range)
+    
+    # clean up the Pool object
+    pool.close()
+    pool.join()
 
     Fw=np.asarray(Fw)
     if verbose:
