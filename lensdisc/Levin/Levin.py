@@ -23,6 +23,7 @@ import warnings
 import time
 import matplotlib.pyplot as plt
 import sys
+from tqdm import tqdm
 
 def ChebyshevTFunc_simple_x(x, size):
     """
@@ -620,35 +621,33 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
         # only one frequency
         w_range=np.array([w])
     else:
-        #print(w)
-        #print(type(w))
-        raise Exception('Only array containing frequencies or list with boundaries is accepted')
+        raise Exception('Something is wrong with the frequency')
 
     Fw=[]
     #time_l=[]
+    with tqdm(total=len(w_range)) as pbar:
+        for w in w_range:
 
-    for w in w_range:
+            #print('W',w)
+            const = -1j*w*np.exp(1j*w*y**2./2.)
 
-        #print('W',w)
-        const = -1j*w*np.exp(1j*w*y**2./2.)
+            # ++++++++++++++++++++++++++ optimal with adaptive subdivision
+            if typesub=='Fixed':
+                I_cos_sin = InteFunc_fix_step(w, y,lens_model, [a,b,c,p], N_step)
+            elif typesub=='Adaptive':
+                I_cos_sin = InteFunc(w, y,lens_model, [a,b,c,p], N_step)
+            elif typesub=='Simple':
+                I_cos_sin = InteFunc_simple(w, y,lens_model, [a,b,c,p])
+            else:
+                raise Exception('Unsupported subdivision type. available: Fixed, Adaptive,Simple')
 
-        # ++++++++++++++++++++++++++ optimal with adaptive subdivision
-        if typesub=='Fixed':
-            I_cos_sin = InteFunc_fix_step(w, y,lens_model, [a,b,c,p], N_step)
-        elif typesub=='Adaptive':
-            I_cos_sin = InteFunc(w, y,lens_model, [a,b,c,p], N_step)
-        elif typesub=='Simple':
-            I_cos_sin = InteFunc_simple(w, y,lens_model, [a,b,c,p])
-        else:
-            raise Exception('Unsupported subdivision type. available: Fixed, Adaptive,Simple')
+            #print('I_cos', I_cos_sin[0])
+            #print('I_sin', I_cos_sin[1])
 
-        #print('I_cos', I_cos_sin[0])
-        #print('I_sin', I_cos_sin[1])
-
-        restemp = const * (I_cos_sin[0] + 1j*I_cos_sin[1])
-        #print(restemp)
-        Fw.append(restemp)
-        #time_l.append(time.time()-start)
+            restemp = const * (I_cos_sin[0] + 1j*I_cos_sin[1])
+            #print(restemp)
+            Fw.append(restemp)
+            #time_l.append(time.time()-start)
 
     Fw=np.asarray(Fw)
     if verbose:
@@ -675,7 +674,7 @@ def parallel_func(w, y, lens_model, fact, typesub, N_step):
     restemp = const * (I_cos_sin[0] + 1j * I_cos_sin[1])
     return restemp
     
-def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True, N_step=50, n_processes=6):
+def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True, N_step=50, n_processes=None):
     
     '''
     Solve the diffraction integral
@@ -696,13 +695,14 @@ def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbos
     '''
     
     a,b,c,p =fact[0],fact[1],fact[2],fact[3]
-
+    Fw=[]
     if verbose:
         print("Levin Method with: lens - {}; x - {}  and subdivision {}".format(lens_model, y, typesub ))
         if lens_model=='softenedpowerlawkappa' or lens_model=='softenedpowerlaw':
             print(f'additional parameters a - {a}; b - {b}; p-{p}')
         elif lens_model=='SIScore':
             print(f"additional parameters a - {a}; b - {b}")
+        
 
         print('Running...')
 
@@ -711,39 +711,25 @@ def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbos
         w_range=np.round(np.linspace(w[0],w[1],int(w[2])),5)
     elif type(w).__name__ =='ndarray':
         w_range=np.round(w,5)
+    elif len(np.array([w]))==1:
+        # only one frequency
+        w_range=np.array([w])
     else:
         raise Exception('Only array containing frequencies or list with boundaries is accepted')
 
-    Fw=[]
-    #time_l=[]
+       # If n_processes is None, use all available cores
+    if n_processes is None:
+        pool = Pool()
+    else:
+        pool = Pool(n_processes)
     
-    '''
-    for w in w_range:
-
-        #print('W',w)
-        const = -1j*w*np.exp(1j*w*y**2./2.)
-
-        # ++++++++++++++++++++++++++ optimal with adaptive subdivision
-        if typesub=='Fixed':
-            I_cos_sin = InteFunc_fix_step(w, y,lens_model, [a,b,c,p], N_step)
-        elif typesub=='Adaptive':
-            I_cos_sin = InteFunc(w, y,lens_model, [a,b,c,p], N_step)
-        elif typesub=='Simple':
-            I_cos_sin = InteFunc_simple(w, y,lens_model, [a,b,c,p])
-        else:
-            raise Exception('Unsupported subdivision type. available: Fixed, Adaptive,Simple')
-
-        #print('I_cos', I_cos_sin[0])
-        #print('I_sin', I_cos_sin[1])
-    '''
+    #parallel_func_partial = partial(parallel_func, y=y, lens_model=lens_model, fact=fact, typesub=typesub, N_step=N_step)
     
-    # create a Pool object with the desired number of processes
-    pool = Pool(processes=n_processes)
-    parallel_func_partial = partial(parallel_func, y=y, lens_model=lens_model, fact=fact, typesub=typesub, N_step=N_step)
+    with tqdm(total=len(w_range)) as pbar:
+        for restemp in pool.imap_unordered(partial(parallel_func, y=y, lens_model=lens_model, fact=fact, typesub=typesub, N_step=N_step), w_range):
+            Fw.append(restemp)
+            pbar.update()
 
-    # run the for loop in parallel using the map() method
-    Fw = pool.map(parallel_func_partial, w_range)
-    
     # clean up the Pool object
     pool.close()
     pool.join()
@@ -753,3 +739,4 @@ def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbos
         print('finished in', round(time.time()-start,2),'s' )
 
     return w_range, Fw
+
