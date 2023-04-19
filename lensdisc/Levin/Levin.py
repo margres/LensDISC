@@ -615,7 +615,13 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
         w_range=np.round(np.linspace(w[0],w[1],int(w[2])),5)
     elif type(w).__name__ =='ndarray':
         w_range=np.round(w,5)
+    #elif (type(w).__name__ =='int' or type(w).__name__ =='float')  and len(np.array([w]))==1:
+    elif len(np.array([w]))==1:
+        # only one frequency
+        w_range=np.array([w])
     else:
+        #print(w)
+        #print(type(w))
         raise Exception('Only array containing frequencies or list with boundaries is accepted')
 
     Fw=[]
