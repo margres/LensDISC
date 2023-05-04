@@ -622,13 +622,12 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
         w_range=np.array([w])
     else:
         raise Exception('Something is wrong with the frequency')
-
+    
     Fw=[]
     #time_l=[]
     with tqdm(total=len(w_range)) as pbar:
-        for w in w_range:
+        for w in list(w_range):
 
-            #print('W',w)
             const = -1j*w*np.exp(1j*w*y**2./2.)
 
             # ++++++++++++++++++++++++++ optimal with adaptive subdivision
@@ -647,6 +646,7 @@ def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True
             restemp = const * (I_cos_sin[0] + 1j*I_cos_sin[1])
             #print(restemp)
             Fw.append(restemp)
+            pbar.update()
             #time_l.append(time.time()-start)
 
     Fw=np.asarray(Fw)
