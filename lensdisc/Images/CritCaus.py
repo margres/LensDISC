@@ -12,8 +12,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
-from ..Utils.PostProcess import Filename
-from ..Utils.PlotModels import PutLabels, PutLayout,AddFigText
+from lensdisc.Utils.PostProcess import Filename
+from lensdisc.Utils.PlotModels import PutLabels, PutLayout,AddFigText
 
 
 def DistMatrix( dpsid11,dpsid22,dpsid12, kappa,gamma):

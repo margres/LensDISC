@@ -4,12 +4,12 @@ os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=1
 os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=1
 os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=1
 import numpy as np
-from .Utils.RunConfigFile import ParseConfig
-from .HistCounting.HistCounting import HistMethod
-from .Levin.Levin import LevinMethod
-from .Utils.PostProcess import LevinPostprocess,Histpostprocess
-from .Images.Images import TContourplot
-from .Images.CritCaus import PlotCurves
+from lensdisc.Utils.RunConfigFile import ParseConfig
+from lensdisc.HistCounting.HistCounting import HistMethod
+from lensdisc.Levin.Levin import LevinMethod
+from lensdisc.Utils.PostProcess import LevinPostprocess,Histpostprocess
+from lensdisc.Images.Images import TContourplot
+from lensdisc.Images.CritCaus import PlotCurves
 import sys
 
 

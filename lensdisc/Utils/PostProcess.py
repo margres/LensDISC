@@ -1,7 +1,7 @@
 import pandas as pd
-from .PlotModels import PutLabels, PutLayout, AddFigText
-from .RunConfigFile import ParseConfig
-from .ConfigUnits import PutUnits
+from lensdisc.Utils.PlotModels import PutLabels, PutLayout, AddFigText
+from lensdisc.Utils.RunConfigFile import ParseConfig
+from lensdisc.Utils.ConfigUnits import PutUnits
 import matplotlib.pyplot as plt
 import numpy as np
 

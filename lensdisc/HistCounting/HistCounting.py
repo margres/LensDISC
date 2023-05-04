@@ -16,10 +16,10 @@ import sys
 import numpy as np
 import pandas as pd
 from scipy import signal
-from ..Utils.Versatile import SmoothingFunc
-from ..Images.Images import TFunc, dTFunc, Images
+from lensdisc.Utils.Versatile import SmoothingFunc
+from lensdisc.Images.Images import TFunc, dTFunc, Images
 import time
-from ..Utils.PlotModels import PlotHistCounting
+from lensdisc.Utils.PlotModels import PlotHistCounting
 
 class TreeClass(object):
     """

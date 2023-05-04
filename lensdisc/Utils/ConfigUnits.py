@@ -1,5 +1,5 @@
 import numpy as np
-from .RunConfigFile import ParseConfig
+from lensdisc.Utils.RunConfigFile import ParseConfig
 import os
 from astropy import units as u
 from astropy.constants import G,c, M_sun

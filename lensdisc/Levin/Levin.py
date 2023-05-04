@@ -17,7 +17,7 @@ os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=1
 
 import numpy as np
 import scipy.special as ss
-from ..Utils.FindShift import FirstImage
+from lensdisc.Utils.FindShift import FirstImage
 #import mpmath
 import warnings
 import time

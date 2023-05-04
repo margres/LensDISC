@@ -18,8 +18,8 @@ import numpy as np
 import scipy.optimize as op
 import matplotlib.pyplot as plt
 import warnings
-from ..Utils.PlotModels import PutLabels, PutLayout, AddFigText
-from ..Utils.PostProcess import Filename
+from lensdisc.Utils.PlotModels import PutLabels, PutLayout, AddFigText
+from lensdisc.Utils.PostProcess import Filename
 warnings.filterwarnings("ignore")
 
 

@@ -104,7 +104,7 @@ def ParseConfig():
 
     if config_levin.getfloat('xL') <0:
         raise ValueError('The readial distance must to be positive.')
-    if config_levin.getint('N_step') <0:
+    if int(config_levin.getfloat('N_step'))<0:
         raise ValueError('The amount of steps must be positive.')
     if config_levin.get('typesub') not in ['Fixed', 'Adaptive'] :
         raise ValueError('Wrong type of subdivision.s')
@@ -139,7 +139,7 @@ def GenerateExampleConfig (file_name):
 \n\n\
 ################################## Paths ################################################\n\
 [Paths]\n\n\
-out_dir =  ./Results/                          # main directory for all the outputs \n\
+out_dir =  ./lensdisc_output/                          # main directory for all the outputs \n\
 out_levin = 1D/                                # path results Levin method \n\
 out_hist = 2D/                                 # path results Histogram method \n\
 \n\n\
