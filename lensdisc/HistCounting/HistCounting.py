@@ -71,8 +71,8 @@ class TreeClass(object):
             't': T_list[flag_good],
             'weights': weights*np.ones_like(x1_list[flag_good])
             })
-        self.good_nodes = self.good_nodes.append(tmp, ignore_index=True)
-
+        
+        self.good_nodes = self.good_nodes.append(tmp).reset_index(drop=True)
         # ++++++++++++++ bad node using simple directory
         self.bad_nodes = [x1_list[flag_bad], x2_list[flag_bad], T_list[flag_bad], dT_list[flag_bad]]
 

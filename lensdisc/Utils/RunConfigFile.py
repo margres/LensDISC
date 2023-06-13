@@ -99,7 +99,7 @@ def ParseConfig():
     ## Levin info
     config_levin = config['LevinInfo']
 
-    if config_levin.get('lens_model') not in [ 'point', 'SIScore' , 'softenedpowerlaw', 'softenedpowerlawkappa']:
+    if config_levin.get('lens_model') not in [ 'point', 'SIS','SIScore' , 'softenedpowerlaw', 'softenedpowerlawkappa']:
         raise ValueError('Lens model {} not available! Pick one in between: \n  point, SIScore , softenedpowerlaw, softenedpowerlawkappa .'.format(config_levin.get('lens_model')))
 
     if config_levin.getfloat('xL') <0:
@@ -150,15 +150,16 @@ add_units=False                                # Boolean, if False the results w
 M = 50.0                                       # mass of the lens in solar masses \n\
 D_l = 10.0                                     # distance of the lens in Mpc \n\
 D_s = 100.0                                    # distance of the source in Mpc \n\
+z = 0                                          # redshift of the lens \n\
 \n\n\
 ################################## LevinInfo ##############################################\n\
 [LevinInfo]\n\n\
 lens_model= SIScore                            # String. Lens model, supported models: \n\
-						                       # point, SIScore , softenedpowerlaw, softenedpowerlawkappa. \n\
+						                       # point, SIS, SIScore , softenedpowerlaw, softenedpowerlawkappa. \n\
                                                # str \n\
 xL =       0.1                                 # radial distance lens-source - in units of Einstein radius  \n\
                                                # positive float \n\
-w = 0.001,100,1000		               		   # frequency range and amount of points \n\
+w = 0.001,100,1000		               		   # frequency range, start, stop, step \n\
 #lens parameters \n\
 a =         1.0                                # Amplitude parameter. \n\
                                                # float (default=1)\n\

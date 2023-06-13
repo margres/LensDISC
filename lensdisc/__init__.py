@@ -16,7 +16,7 @@ from lensdisc.DiffInt import DInt2D,DInt1D
 from lensdisc.Utils.Versatile import SmoothingFunc
 from lensdisc.Utils.PN_wav import PN_waveFunc
 from lensdisc.Utils.PlotModels import PutLayout
-from lensdisc.Utils.Pointmass import Pointmass
+from lensdisc.Utils.Pointmass import Pointmass_analytical
 from lensdisc.Utils.ConfigUnits import PutUnits, RemoveUnits
 from lensdisc.HistCounting.HistCounting import HistMethod
-from lensdisc.Levin.Levin import LevinMethod,LevinMethodparallel
+from lensdisc.Levin.Levin import LevinMethod

@@ -94,12 +94,12 @@ def SIScore (x,y,fact):
     b=fact[1]
 
     #derivative of the 1D potential
-    phip= a*x/(np.sqrt(b**2+x**2))
+    phip= a*x/(np.sqrt(b**2+x**2)) # - (b/(np.sqrt(b**2+x**2) + b) )* (x/(np.sqrt(b**2+x**2)))
+    # Check if the extra term has a in it (SK)
     #derivative of the time delay
     tp= (x - y) - phip
 
     return tp
-
 def point (x,y,fact):
 
     '''
@@ -187,17 +187,15 @@ def TimeDelay(x,y,fact,lens_model):
 
     if x==0:
         phi=0
-
+    elif lens_model == 'SIS':
+        phi = a *x
     elif lens_model == 'SIScore':
-        phi =  a * np.sqrt(b**2+x**2)
+        phi=a*(x**2 + b**2)**(0.5) #+ b*np.log(100+2*b/(np.sqrt(b**2 + x**2) + b))
     elif lens_model == 'point':
         phi = np.log(x)
-
     elif lens_model == 'softenedpowerlaw':
         phi=a*(x**2/c**2+b**2)**(p/2) - a*b**p
-
     elif lens_model == 'softenedpowerlawkappa':
-
         if p>0 and b==0:
             phi= 1/p**2 * a**(2-p) *x**p
 
@@ -250,18 +248,3 @@ def FirstImage(y,fact,lens_model):
     #print('phi_m:',t)
     return t
 
-
-
-if __name__ == '__main__':
-
-    a=1
-    b=0.5
-    c=1
-    p=1.8
-    fact=[a,b,c,p]
-    y=np.sqrt(2*0.1**2)
-    lens_model='point'
-
-
-    t = FirstImage(y,fact,lens_model)
-    print('phi_m:',t)

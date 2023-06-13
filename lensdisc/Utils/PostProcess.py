@@ -79,9 +79,9 @@ def Histpostprocess(w, Fw,Fwc, xL12,lens_model,kappa,gamma, out_2D, plot=True):
         w_unitless= w.copy()
         w=PutUnits(w_unitless)
         Savetocsv(w_unitless,Fw,savetopath, w, Fwc=Fwc)
-        xlabel='$\omega$ [Hz]'
+        xlabel= '$\omega$ [Hz]'
         ylabel_amp='$|F(\omega)|$'
-        ylabel_ph = '$\Phi_F$(\omega)'
+        ylabel_ph = '$\Phi_F(\omega)$'
     else:
         xlabel='$w$'
         ylabel_amp= '$|F(w)|$'
@@ -94,23 +94,22 @@ def Histpostprocess(w, Fw,Fwc, xL12,lens_model,kappa,gamma, out_2D, plot=True):
         PutLayout()
         ### TO DO: add title and kappa gamma info
         fig, (ax1,ax2) = plt.subplots(nrows=2, sharex=True,  figsize=(10, 10)) # frameon=False removes frames
-        ax1.plot( w, np.abs(Fwc), c='silver',ls='-', label= 'Semi-classical')
-        ax1.plot( w,np.abs(Fw),c='lightcoral',ls='-',alpha=1, label= 'Hist-counting',)
+        ax1.plot( w, np.abs(Fwc), c='silver',ls='-', label= 'Semi classical')
+        ax1.plot( w,np.abs(Fw),c='lightcoral',ls='-',alpha=1, label= 'Hist counting',)
         ax1.set_xscale('log')
         ax1.set_ylabel(ylabel_amp, fontsize=20)
         #ax1.set_title('SIScore x$_L$=0.4 a=1.0 b=0.5')
         #ax1.legend( fontsize=15)
 
 
-        ax2.plot(w, np.angle(Fwc),c='silver',ls='-', label= 'Semi-classical',alpha=1)
-        ax2.plot(w , np.angle(Fw),c='lightcoral',ls='-',alpha=1, label= 'Hist-counting')
+        ax2.plot(w, np.angle(Fwc),c='silver',ls='-', label= 'Semi classical',alpha=1)
+        ax2.plot(w , np.angle(Fw),c='lightcoral',ls='-',alpha=1, label= 'Hist counting')
         ax2.set_xscale('log')
         ax2.set_ylabel(ylabel_ph, fontsize=20)
         #ax2.legend( fontsize=15)
         ax2.set_xlabel(xlabel,fontsize=20)
         plt.savefig(out_2D+'Fw_'+add_info+'.png',dpi=100)
-        plt.close()
-        plt.legend(loc = 'lower center', bbox_to_anchor = (0, -0.01, 1, 1),
+        plt.legend(loc = 'lower left', bbox_to_anchor = (0, -0.01, 1, 1),
            bbox_transform = plt.gcf().transFigure)
         plt.show(block=False)
         plt.close()

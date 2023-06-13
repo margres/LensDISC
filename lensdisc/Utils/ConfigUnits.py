@@ -13,6 +13,10 @@ D_ls=ERadInfo['D_ls']*u.Mpc
 D_l=ERadInfo['D_l']*u.Mpc
 D_s=ERadInfo['D_s']*u.Mpc
 
+def Ts():
+    return 4*G*M/c**3
+
+
 def Einstein_angle():
 
     return (4*G*M*D_ls/(c**2*D_l*D_s))**(1/2)
@@ -21,10 +25,16 @@ def ConvFactor():
     return (Einstein_angle()**2/(D_ls))*(D_s*D_l)
 
 def PutUnits(w):
-    w_units=w*c/ConvFactor()
+    w_units=w*c/Ts()
     return np.array(w_units)
-
+'''
 def RemoveUnits(w):
 
     w_unitless=w/u.s*ConvFactor()/c
+    return np.array(w_unitless)
+'''
+
+def RemoveUnits(w):
+
+    w_unitless=w/u.s*Ts(M)
     return np.array(w_unitless)

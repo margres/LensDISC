@@ -10,14 +10,17 @@
 ###### Transfer to: L * c = [x/(1-x)**3, 0, 0, 0] for cos, or [0, x/(1-x)**3, 0, 0] for sin
 
 import os
-os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=1
-os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=1
-os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=1
+#os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=1
+#os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=1
+#os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=1
 
 
+from multiprocessing import Pool
+from functools import partial
 import numpy as np
 import scipy.special as ss
 from lensdisc.Utils.FindShift import FirstImage
+from lensdisc.Utils.Versatile import SmoothingFunc
 #import mpmath
 import warnings
 import time
@@ -171,6 +174,12 @@ def GpFunc(xlist, w, y, lens_model,fact):
 
         sq=(b**2+xlist**2/(c**2*(xlist - 1)**2))**(0.5)
         gpx = w * (a*xlist - c**2*xlist*sq)/(c**2*(xlist - 1)**3*sq)
+        '''
+        f1 = xlist/((1-xlist)**3)
+        f2 = (xlist/(1-xlist))**2
+        f3 = (b**2 + f2)**(0.5)
+        gpx =  w* (f1/f3)*(1 - b/(f3 +b))
+        '''
 
     elif lens_model == 'point':
         #gpx=-w*(0.5*xlist**2 - 2*xlist +1)/((1-xlist)**3 *xlist)
@@ -232,7 +241,7 @@ def WFunc(x, w, y, phim, lens_model,fact):
 
     elif lens_model== 'SIScore':
 
-        pot=a*(x**2 + b**2)**(0.5)
+        pot=a* (x**2 + b**2)**(0.5) #+ b*np.log( 1e-4 + 2*b/((b**2 + x**2)**0.5 + b))
 
     elif lens_model == 'softenedpowerlaw':
 
@@ -580,86 +589,8 @@ def InteFunc_fix_step(w, y, lens_model='SIScore',fact=[1,0,1,1], size=19, N_step
 
     return I_cos_sin
 
-def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True, N_step=50):
-    
-    '''
-    Solve the diffraction integral
-    
-    Parameters
-    ----------
-    w: float
-        dimensionless frequency from lens problem
-    y: float
-        impact parameter from lens problem
-    lens_model: string ('SIS', 'point', ..)
-        lens model
-    fact: parameters used for some lenses.
-         fact = [a,b,c,p] 
-    verbose: print info about what integral is calculating
-    N_step: int (default=50)
-        fixed number of steps for subdivision
-    '''
-    
-    a,b,c,p =fact[0],fact[1],fact[2],fact[3]
 
-    if verbose:
-        print("Levin Method with: lens - {}; x - {}  and subdivision {}".format(lens_model, y, typesub ))
-        if lens_model=='softenedpowerlawkappa' or lens_model=='softenedpowerlaw':
-            print(f'additional parameters a - {a}; b - {b}; p-{p}')
-        elif lens_model=='SIScore':
-            print(f"additional parameters a - {a}; b - {b}")
-
-        print('Running...')
-
-    start = time.time()
-    if type(w).__name__ =='list':
-        w_range=np.round(np.linspace(w[0],w[1],int(w[2])),5)
-    elif type(w).__name__ =='ndarray':
-        w_range=np.round(w,5)
-    #elif (type(w).__name__ =='int' or type(w).__name__ =='float')  and len(np.array([w]))==1:
-    elif len(np.array([w]))==1:
-        # only one frequency
-        w_range=np.array([w])
-    else:
-        raise Exception('Something is wrong with the frequency')
-    
-    Fw=[]
-    #time_l=[]
-    with tqdm(total=len(w_range)) as pbar:
-        for w in list(w_range):
-
-            const = -1j*w*np.exp(1j*w*y**2./2.)
-
-            # ++++++++++++++++++++++++++ optimal with adaptive subdivision
-            if typesub=='Fixed':
-                I_cos_sin = InteFunc_fix_step(w, y,lens_model, [a,b,c,p], N_step)
-            elif typesub=='Adaptive':
-                I_cos_sin = InteFunc(w, y,lens_model, [a,b,c,p], N_step)
-            elif typesub=='Simple':
-                I_cos_sin = InteFunc_simple(w, y,lens_model, [a,b,c,p])
-            else:
-                raise Exception('Unsupported subdivision type. available: Fixed, Adaptive,Simple')
-
-            #print('I_cos', I_cos_sin[0])
-            #print('I_sin', I_cos_sin[1])
-
-            restemp = const * (I_cos_sin[0] + 1j*I_cos_sin[1])
-            #print(restemp)
-            Fw.append(restemp)
-            pbar.update()
-            #time_l.append(time.time()-start)
-
-    Fw=np.asarray(Fw)
-    if verbose:
-        print('finished in', round(time.time()-start,2),'s' )
-
-    return w_range, Fw
-
-
-from multiprocessing import Pool
-from functools import partial
-
-def parallel_func(w, y, lens_model, fact, typesub, N_step):
+def call_int_func(w, y, lens_model, fact, typesub, N_step):
     const = -1j * w * np.exp(1j * w * y ** 2. / 2.)
 
     if typesub == 'Fixed':
@@ -673,8 +604,11 @@ def parallel_func(w, y, lens_model, fact, typesub, N_step):
 
     restemp = const * (I_cos_sin[0] + 1j * I_cos_sin[1])
     return restemp
-    
-def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True, N_step=50, n_processes=None):
+
+
+def LevinMethod(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', 
+                verbose = True, N_step=50,  n_processes=None, parallel=False,
+                smoothing=True):
     
     '''
     Solve the diffraction integral
@@ -685,7 +619,7 @@ def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbos
         dimensionless frequency from lens problem
     y: float
         impact parameter from lens problem
-    lens_model: string ('SIS', 'point', ..)
+    lens_model: string ('SIScore', 'point', ..)
         lens model
     fact: parameters used for some lenses.
          fact = [a,b,c,p] 
@@ -693,6 +627,79 @@ def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbos
     N_step: int (default=50)
         fixed number of steps for subdivision
     '''
+    
+    a,b,c,p =fact[0],fact[1],fact[2],fact[3]
+
+    if verbose:
+        print("Levin Method with: lens - {}; x - {}  and subdivision {}".format(lens_model, y, typesub ))
+        if lens_model=='softenedpowerlawkappa' or lens_model=='softenedpowerlaw':
+            print(f'additional parameters a - {a}; b - {b}; p-{p}')
+        elif lens_model=='SIScore':
+            print(f"additional parameters a - {a}; b - {b}")
+
+        print('Running...')
+  
+
+    start = time.time()
+    if type(w).__name__ =='list':
+        #w_range=np.round(np.linspace(w[0],w[1],int(w[2])),5)
+        w_range=np.arange(w[0],w[1],w[2])
+    elif type(w).__name__ =='ndarray':
+        w_range=np.round(w,5)
+    #elif (type(w).__name__ =='int' or type(w).__name__ =='float')  and len(np.array([w]))==1:
+    elif len(np.array([w]))==1:
+        # only one frequency
+        w_range=np.array([w])
+    else:
+        raise Exception('Something is wrong with the frequency')
+    
+    Fw=[]
+    #time_l=[]
+    with tqdm(total=len(w_range)) as pbar:
+
+        if parallel==False:
+            print( 'Runing on 1 CPU')
+            for w in list(w_range):
+                restemp = call_int_func(w, y, lens_model, fact, typesub, N_step)
+                Fw.append(restemp)
+                pbar.update()
+                #time_l.append(time.time()-start)
+        else:
+            print('Running in parallel')
+            with Pool(n_processes) as pool:
+                results = pool.map(partial(call_int_func, y=y, lens_model=lens_model, fact=fact, typesub=typesub, N_step=N_step), w_range)
+                Fw.extend(results)
+                pbar.update()
+    
+    Fw=np.asarray(Fw)
+    if verbose:
+        print('finished in', round(time.time()-start,2),'s' )
+    if smoothing==True:
+        w_range, Fw = SmoothingFunc(w_range,Fw, w_range[1]- w_range[0])
+
+    return w_range, Fw
+
+
+'''    
+def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbose = True, N_step=50, n_processes=None):
+    
+    
+    Solve the diffraction integral
+    
+    Parameters
+    ----------
+    w: float
+        dimensionless frequency from lens problem
+    y: float
+        impact parameter from lens problem
+    lens_model: string ('SIS','SIScore', 'point', ..)
+        lens model
+    fact: parameters used for some lenses.
+         fact = [a,b,c,p] 
+    verbose: print info about what integral is calculating
+    N_step: int (default=50)
+        fixed number of steps for subdivision
+    
     
     a,b,c,p =fact[0],fact[1],fact[2],fact[3]
     Fw=[]
@@ -705,6 +712,7 @@ def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbos
         
 
         print('Running...')
+        print('fhebcaarhf')
 
     start = time.time()
     if type(w).__name__ =='list':
@@ -726,7 +734,7 @@ def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbos
     #parallel_func_partial = partial(parallel_func, y=y, lens_model=lens_model, fact=fact, typesub=typesub, N_step=N_step)
     
     with tqdm(total=len(w_range)) as pbar:
-        for restemp in pool.imap_unordered(partial(parallel_func, y=y, lens_model=lens_model, fact=fact, typesub=typesub, N_step=N_step), w_range):
+        for restemp in pool.imap_unordered(partial(call_int_funct, y=y, lens_model=lens_model, fact=fact, typesub=typesub, N_step=N_step), w_range):
             Fw.append(restemp)
             pbar.update()
 
@@ -740,3 +748,4 @@ def LevinMethodparallel(w,y, lens_model, fact=[1,0,1,1], typesub='Fixed', verbos
 
     return w_range, Fw
 
+''' 

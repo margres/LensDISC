@@ -26,6 +26,7 @@ def SmoothingFunc(x, y, dx_interpolate, outlier_sigma=3, rolling_window=5):
 
     # drop outliers
     mask_tmp = rolling_sigma <= outlier_sigma*sigma_median
+    print(len(mask_tmp))
     x = x[mask_tmp]
     y = y[mask_tmp]
 

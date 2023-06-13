@@ -11,7 +11,7 @@ import scipy.special as sc
 from mpmath import hyp1f1
 import cmath
 
-def Pointmass(w,y):
+def Pointmass_analytical(w,y):
     
     '''
     function returning the analytical solution for the poinmass lens.
